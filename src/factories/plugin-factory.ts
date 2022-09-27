@@ -12,21 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {ConfigurationError} from '../errors';
+import {GitHub} from '../github';
 import {
   LinkedVersionPluginConfig,
   PluginType,
   RepositoryConfig,
   SentenceCasePluginConfig,
 } from '../manifest';
-import {GitHub} from '../github';
 import {ManifestPlugin} from '../plugin';
-import {LinkedVersions} from '../plugins/linked-versions';
 import {CargoWorkspace} from '../plugins/cargo-workspace';
-import {NodeWorkspace} from '../plugins/node-workspace';
-import {VersioningStrategyType} from './versioning-strategy-factory';
+import {LinkedVersions} from '../plugins/linked-versions';
 import {MavenWorkspace} from '../plugins/maven-workspace';
-import {ConfigurationError} from '../errors';
+import {NodeWorkspace} from '../plugins/node-workspace';
+import {NxWorkspace} from '../plugins/nx-workspace';
 import {SentenceCase} from '../plugins/sentence-case';
+import {VersioningStrategyType} from './versioning-strategy-factory';
 
 export interface PluginFactoryOptions {
   type: PluginType;
@@ -69,6 +70,13 @@ const pluginFactories: Record<string, PluginBuilder> = {
     ),
   'maven-workspace': options =>
     new MavenWorkspace(
+      options.github,
+      options.targetBranch,
+      options.repositoryConfig,
+      options
+    ),
+  'nx-workspace': options =>
+    new NxWorkspace(
       options.github,
       options.targetBranch,
       options.repositoryConfig,

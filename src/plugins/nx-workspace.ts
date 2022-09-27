@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {readFileSync} from 'fs';
+import {existsSync, readFileSync} from 'fs';
 import {
   ProjectGraph,
   ProjectGraphProjectNode,
@@ -64,6 +64,8 @@ export class NxWorkspace extends WorkspacePlugin<Project> {
     project: Project,
     updatedVersions: VersionsMap
   ): CandidateReleasePullRequest {
+    console.log(project);
+    console.log(updatedVersions);
     return existingCandidate;
   }
 
@@ -142,18 +144,28 @@ export class NxWorkspace extends WorkspacePlugin<Project> {
     this.projectGraph = await createProjectGraphAsync();
     if (this.projectGraph.externalNodes) {
       const nodes = Object.values(this.projectGraph.nodes);
-      allPackages = nodes.map(node => {
-        const packagePath = addPath(node.data.root, 'package.json');
-        const rawJson = readFileSync(packagePath).toString();
-        const packageData = JSON.parse(rawJson);
-        return {
-          ...node,
-          packageName: packageData.name,
-          packageVersion: packageData.version,
-          packageJson: packageData,
-          packageJsonRaw: rawJson,
-        };
-      });
+      allPackages = nodes
+        .filter(node => {
+          const packagePath = addPath(node.data.root, 'package.json');
+          if (existsSync(packagePath)) {
+            return true;
+          } else {
+            console.log(`${node.name} does not have a package.json. Skipping`);
+            return false;
+          }
+        })
+        .map(node => {
+          const packagePath = addPath(node.data.root, 'package.json');
+          const rawJson = readFileSync(packagePath).toString();
+          const packageData = JSON.parse(rawJson);
+          return {
+            ...node,
+            packageName: packageData.name,
+            packageVersion: packageData.version,
+            packageJson: packageData,
+            packageJsonRaw: rawJson,
+          };
+        });
     }
 
     // candidatesByPackage
