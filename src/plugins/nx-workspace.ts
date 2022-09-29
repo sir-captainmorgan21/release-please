@@ -213,7 +213,7 @@ export class NxWorkspace extends WorkspacePlugin<Project> {
       const workspaceDeps = projectDeps
         .filter(dep => workspacePackageNames.has(dep.target))
         .map(dep => dep.target);
-      graph.set(project.packageName, {
+      graph.set(project.name, {
         deps: workspaceDeps,
         value: project,
       });
